@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package common;
+
+message Position {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Timestamp {
+  double epoch = 1;
+}

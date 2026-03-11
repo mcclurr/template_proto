@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package examples1;
+
+import "common/common.proto";
+
+message Track {
+  string id = 1;
+  common.Position position = 2;
+  common.Timestamp time = 3;
+}

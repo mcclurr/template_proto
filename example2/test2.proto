@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package examples2;
+
+import "common/common.proto";
+
+message SensorReading {
+  string sensor_id = 1;
+  common.Position location = 2;
+  double temperature = 3;
+}
