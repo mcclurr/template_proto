@@ -1,0 +1,178 @@
+# Project dump
+# Root: C:\Users\Riley\Github\template_proto
+
+docker-compose.yml
+
+services:
+  python-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.python
+    tty: true
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+     - ./out:/app/out
+
+
+================================================================================
+
+README.md
+
+protoc \
+  -I=. \
+  --python_out=out \
+  common/common.proto \
+  examples1/test1.proto \
+  examples2/test1.proto
+
+================================================================================
+
+requirements.txt
+
+grpcio-tools==1.62.2
+
+================================================================================
+
+docker/Dockerfile.python
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt /app/
+
+RUN pip install --no-cache-dir -r requirements.txt
+RUN rm /app/requirements.txt
+
+COPY src/ /app/src
+COPY protos /app/protos
+
+RUN python -m grpc_tools.protoc \
+    -I /app/protos \
+    --python_out=/app/src/protos \
+    $(ls /app/protos/*.proto)
+
+
+
+================================================================================
+
+protos/common/common.proto
+
+syntax = "proto3";
+
+package common;
+
+message Position {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Timestamp {
+  double epoch = 1;
+}
+
+
+================================================================================
+
+protos/example1/test1.proto
+
+syntax = "proto3";
+
+package examples1;
+
+import "common/common.proto";
+
+message Track {
+  string id = 1;
+  common.Position position = 2;
+  common.Timestamp time = 3;
+}
+
+
+================================================================================
+
+protos/example2/test1.proto
+
+syntax = "proto3";
+
+package examples2;
+
+import "common/common.proto";
+
+message SensorReading {
+  string sensor_id = 1;
+  common.Position location = 2;
+  double temperature = 3;
+}
+
+
+================================================================================
+
+src/log.py
+
+import logging
+from datetime import datetime
+from pathlib import Path
+
+
+def init_logging(prefix: str) -> logging.Logger:
+    """
+    Initialize structured logging.
+
+    Creates:
+        out/YYYYMMDD_HHMMSS-<prefix>.log
+
+    Returns:
+        configured logger
+    """
+    log_dir = Path("out")
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = log_dir / f"{ts}-{prefix}.log"
+
+    logger = logging.getLogger(prefix)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False  # prevent duplicate root logging
+
+    # Prevent duplicate handlers if reinitialized
+    if logger.handlers:
+        return logger
+
+    formatter = logging.Formatter(
+        fmt="%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    file_handler = logging.FileHandler(filename)
+    file_handler.setFormatter(formatter)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
+    logger.info(f"Logging initialized → {filename}")
+
+    return logger
+
+================================================================================
+
+src/main.py
+
+from log import init_logging
+
+if __name__ == "__main__":
+    logger = init_logging("python-dev")
+
+
+
+    
+
+================================================================================
+
+
+# Included files: 9
+# Skipped files: 2

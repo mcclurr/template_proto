@@ -1,0 +1,4 @@
+**/__pycache__
+
+src/protos/*
+!src/protos/__init__.py

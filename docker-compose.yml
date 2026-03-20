@@ -1,0 +1,9 @@
+services:
+  python-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.python
+    tty: true
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+     - ./out:/app/out

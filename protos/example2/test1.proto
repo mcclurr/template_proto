@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package examples2;
+package example2;
 
 import "common/common.proto";
 
